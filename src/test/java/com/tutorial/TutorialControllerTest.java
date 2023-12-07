@@ -44,14 +44,14 @@ public class TutorialControllerTest {
 	void setupDatabaseForTest() {
 		url = "http://localhost:" + port + "/api/tutorials";
 		
-		testRestTemplate.delete(url, Tutorial.class);
+		tutorialController.deleteAllTutorials();
 	
 		Tutorial input = new Tutorial("Hello World", "testdescription1", false);
-		ResponseEntity<Tutorial> result = this.testRestTemplate.postForEntity(url, input, Tutorial.class);
+		ResponseEntity<Tutorial> result = this.tutorialController.createTutorial(input);
 		id1 = result.getBody().getId();
 
 		input = new Tutorial("Miss World", "testdescription2", false);
-		result = this.testRestTemplate.postForEntity(url, input, Tutorial.class);
+		result = this.tutorialController.createTutorial(input);
 		id2 = result.getBody().getId();
 	}
 	
@@ -62,51 +62,40 @@ public class TutorialControllerTest {
 	
 	@Test
 	void getAllTutorialsTest() {
-		assertThat(this.testRestTemplate.getForObject(url, List.class)).isNotNull();
+		assertThat(this.tutorialController.getAllTutorials(null)).isNotNull();
 	}
 	
 	@Test
 	void findTutorialsByKeywordHelloTest () {
-		url = "http://localhost:" + port + "/api/tutorials";
-
-		URI uri = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("title", "Hello").build().toUri();
-				
-		ResponseEntity<List> result = this.testRestTemplate.getForEntity(uri, List.class);		
-		LinkedHashMap<?, ?> map = (LinkedHashMap<?, ?>)(result.getBody().get(0));
-		
+		ResponseEntity<List<Tutorial>> result = this.tutorialController.getAllTutorials("Hello");
 		Assertions.assertEquals(HttpStatus.OK.value(), result.getStatusCode().value());
-		
-		String title = (String)map.get("title");
-		
-		assertThat(title.contains("Hello"));
+
 		Assertions.assertEquals(1, result.getBody().size());
+
+		Tutorial tutorial = result.getBody().get(0);
+		assertThat(tutorial.getTitle().contains("Hello"));
 	}
 	
 	@Test
 	void findTutorialsByKeywordWorldTest () {
-		url = "http://localhost:" + port + "/api/tutorials";
-
-		URI uri = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("title", "World").build().toUri();
-				
-		ResponseEntity<List> result = this.testRestTemplate.getForEntity(uri, List.class);		
-		LinkedHashMap<?, ?> map = (LinkedHashMap<?, ?>)(result.getBody().get(0));
-		
+		ResponseEntity<List<Tutorial>> result = this.tutorialController.getAllTutorials("World");		
 		Assertions.assertEquals(HttpStatus.OK.value(), result.getStatusCode().value());
-		
-		String title = (String)map.get("title");
-		
-		assertThat(title.contains("World"));
+
 		Assertions.assertEquals(2, result.getBody().size());
+
+		Tutorial tutorial = result.getBody().get(0);
+		assertThat(tutorial.getTitle().contains("World"));
+		
+		tutorial = result.getBody().get(1);
+		assertThat(tutorial.getTitle().contains("World"));
 	}
 
 	@Test
 	void createTutorialTest() {
-		Tutorial input = new Tutorial("testtitle3", "testdescription3", false);
+		Tutorial tutorial = new Tutorial("testtitle3", "testdescription3", false);
 		
-		ResponseEntity<Tutorial> result = this.testRestTemplate.postForEntity(url, input, Tutorial.class);
-
+		ResponseEntity<Tutorial> result = this.tutorialController.createTutorial(tutorial);
+		
 		Assertions.assertEquals(HttpStatus.CREATED.value(), result.getStatusCode().value());
 
 		assertThat(result.getBody().getId()).isNotEqualTo(0);
@@ -119,83 +108,61 @@ public class TutorialControllerTest {
 	void createTutorialTestWithException() {
 		Tutorial input = new Tutorial("", "testdescription4", false);
 
-		ResponseEntity<Tutorial> result = this.testRestTemplate.postForEntity(url, input, Tutorial.class);
+		ResponseEntity<Tutorial> result = this.tutorialController.createTutorial(input);
 		
 		Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), result.getStatusCode().value());
 	}
 
 	@Test
 	void updateTutorialTest() {
-		Tutorial input = new Tutorial("testtitle_1", "testdescription_1", false);
+		Tutorial tutorial = new Tutorial("testtitle_1", "testdescription_1", false);
 
-		this.testRestTemplate.put(url + "/" + id1, input);
+		ResponseEntity<Tutorial> result = this.tutorialController.updateTutorial(id1, tutorial);
+		assertThat(HttpStatus.OK.equals(result.getStatusCode()));
+
+		assertThat(tutorial.getTitle()).isEqualTo(result.getBody().getTitle());
+		assertThat(tutorial.getDescription()).isEqualTo(result.getBody().getDescription());
+		assertThat(tutorial.isPublished()).isEqualTo(result.getBody().isPublished());
 	}
 
 	@Test
 	void updateTutorialNotFoundTest() {
-		Tutorial input = new Tutorial("testtitle_1", "testdescription_1", false);
+		Tutorial tutorial = new Tutorial("testtitle_1", "testdescription_1", false);
 
-		ResponseEntity<Tutorial> response = testRestTemplate.exchange(
-	                url + "/-1",
-	                HttpMethod.PUT,
-	                new HttpEntity<>(input),
-	                Tutorial.class
-	        );
-		
+		ResponseEntity<Tutorial> response = this.tutorialController.updateTutorial(-1L, tutorial);
 		Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 	}
 
 	@Test
 	void deleteTutorialTest() {
-		ResponseEntity<Tutorial> response = testRestTemplate.exchange(
-                url + "/" + id1,
-                HttpMethod.DELETE,
-                null,
-                Tutorial.class
-        );
-
+		ResponseEntity<Tutorial> response = this.tutorialController.deleteTutorial(id1);
 		Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 	}
 
 	@Test
 	void deleteTutorialNotFoundTest() {
-		ResponseEntity<Tutorial> response = testRestTemplate.exchange(
-                url + "/-1",
-                HttpMethod.DELETE,
-                null,
-                Tutorial.class
-        );
-
+		ResponseEntity<Tutorial> response = this.tutorialController.deleteTutorial(-1L);
 		Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 	}
 
 	@Test
 	void deleteAllTutorialTest() {
-		ResponseEntity<Tutorial> response = testRestTemplate.exchange(
-                url,
-                HttpMethod.DELETE,
-                null,
-                Tutorial.class
-        );
-
+		ResponseEntity<Tutorial> response = this.tutorialController.deleteAllTutorials();
 		Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 	}
 
 	@Test
 	void findAllPublishedTutorialNonePublishedTest() {
-		ResponseEntity<List> response = testRestTemplate.getForEntity(url + "/published", List.class);
-		
+		ResponseEntity<List<Tutorial>> response = this.tutorialController.findAllPublishedTutorials();
 		Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 	}
 
 	@Test
 	void findAllPublishedTutorialOnePublishedTest() {
-		Tutorial input = new Tutorial("anewone", "testdescription", true);
-
-		this.testRestTemplate.put(url + "/" + id2, input);
+		Tutorial tutorial = new Tutorial("anewone", "testdescription", true);
+		this.tutorialController.createTutorial(tutorial);
 		
-		ResponseEntity<List> response = testRestTemplate.getForEntity(url + "/published", List.class);
-		
+		ResponseEntity<List<Tutorial>> response = this.tutorialController.findAllPublishedTutorials();
 		Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
 	}
 }

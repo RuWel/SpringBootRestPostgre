@@ -1,3 +1,4 @@
+
 package com.tutorial.controller;
 
 import java.util.ArrayList;
@@ -29,13 +30,13 @@ public class TutorialController {
 
 	// get all tutorials or tutorials containing keyword in title
 	@GetMapping("/tutorials")
-	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {
+	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String keyword) {
 		List<Tutorial> result = new ArrayList<>();
 
-		if (title == null ) {
+		if (keyword == null ) {
 			tutorialRepository.findAll().forEach(result::add);
 		} else {
-			tutorialRepository.findByTitleContaining(title).forEach(result::add);
+			tutorialRepository.findByTitleContaining(keyword).forEach(result::add);
 		}
 		
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -84,7 +85,7 @@ public class TutorialController {
 
 			Tutorial newEntity = tutorialRepository.save(data);
 			
-			return new ResponseEntity<>(HttpStatus.OK);
+			return new ResponseEntity<>(newEntity, HttpStatus.OK);
 		}
 		
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);

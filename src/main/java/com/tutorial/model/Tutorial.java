@@ -1,5 +1,7 @@
 package com.tutorial.model;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,22 +13,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter 
 @NoArgsConstructor
 @Table(name="tutorials")
 public class Tutorial {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Getter
 	private long id;
 	
 	@Column(name = "title")
+	@Getter @Setter 
+	@NotEmpty
 	private String title;
 	
 	@Column(name = "description")
+	@Getter @Setter 
 	private String description;
 	
 	@Column(name = "published")
+	@Getter @Setter 
 	private boolean published;
 
 	public Tutorial(String title, String description, boolean published) {
