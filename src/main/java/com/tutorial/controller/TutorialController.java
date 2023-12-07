@@ -32,7 +32,6 @@ public class TutorialController {
 	// get all tutorials or tutorials containing keyword in title
 	@GetMapping("/tutorials")
 	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {
-		System.out.println("FFFFIIIINNNNDDDD = " + title);
 		List<Tutorial> result = new ArrayList<>();
 
 		if (title == null ) {
@@ -47,13 +46,17 @@ public class TutorialController {
 	// get tutorial by ID
 	@GetMapping("/tutorials/{id}")
 	public ResponseEntity<Tutorial> findTutorialByID (@PathVariable("id") Long id) {
-		Optional<Tutorial> result = tutorialRepository.findById(id);
-		
-		if (result.isPresent()) {
-			return (new ResponseEntity<>(result.get(), HttpStatus.CREATED));
+		try {
+			Optional<Tutorial> result = tutorialRepository.findById(id);
+			
+			if (result.isPresent()) {
+				return (new ResponseEntity<>(result.get(), HttpStatus.CREATED));
+			}
+			
+			return (new ResponseEntity<>(HttpStatus.NOT_FOUND));
+		} catch (Exception e) {
+			return (new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 		}
-		
-		return (new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
 	}
 	
 	// create tutorial
@@ -64,13 +67,14 @@ public class TutorialController {
 		
 			return (new ResponseEntity<>(result, HttpStatus.CREATED));
 		} catch (Exception e) {
-			return (new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR));
+			return (new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
 
 	// update tutorial
 	@PutMapping("/tutorials/{id}")
 	public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") Long id, @RequestBody Tutorial tutorial) {
+		try {
 		Optional<Tutorial> result = tutorialRepository.findById(id);
 		
 		if (result.isPresent()) {
@@ -85,7 +89,10 @@ public class TutorialController {
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
 		
-		return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	// delete tutorial by ID
@@ -113,12 +120,16 @@ public class TutorialController {
 	// find published tutorials
 	@GetMapping("/tutorials/published")
 	public ResponseEntity<List<Tutorial>> findAllPublishedTutorials() {
-		List<Tutorial> result = tutorialRepository.findByPublished(true);
-		
-		if (result.isEmpty()) {
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		try {
+			List<Tutorial> result = tutorialRepository.findByPublished(true);
+			
+			if (result.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}
+	
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
-		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 }
