@@ -2,23 +2,18 @@ package com.tutorial;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URI;
-import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.tutorial.controller.TutorialController;
 import com.tutorial.model.Tutorial;
@@ -28,22 +23,14 @@ public class TutorialControllerTest {
 
 	@LocalServerPort
 	private int port;
-	
-	@Autowired
-	private TestRestTemplate testRestTemplate;
-	
+		
 	@Autowired
 	private TutorialController tutorialController;
 		
-	private String url;
-	
 	private Long id1;
-	private Long id2;
 	
 	@BeforeEach
 	void setupDatabaseForTest() {
-		url = "http://localhost:" + port + "/api/tutorials";
-		
 		tutorialController.deleteAllTutorials();
 	
 		Tutorial input = new Tutorial("Hello World", "testdescription1", false);
@@ -52,7 +39,6 @@ public class TutorialControllerTest {
 
 		input = new Tutorial("Miss World", "testdescription2", false);
 		result = this.tutorialController.createTutorial(input);
-		id2 = result.getBody().getId();
 	}
 	
 	@Test
@@ -69,7 +55,6 @@ public class TutorialControllerTest {
 	void findTutorialsByKeywordHelloTest () {
 		ResponseEntity<List<Tutorial>> result = this.tutorialController.getAllTutorials("Hello");
 		Assertions.assertEquals(HttpStatus.OK.value(), result.getStatusCode().value());
-
 		Assertions.assertEquals(1, result.getBody().size());
 
 		Tutorial tutorial = result.getBody().get(0);
@@ -80,7 +65,6 @@ public class TutorialControllerTest {
 	void findTutorialsByKeywordWorldTest () {
 		ResponseEntity<List<Tutorial>> result = this.tutorialController.getAllTutorials("World");		
 		Assertions.assertEquals(HttpStatus.OK.value(), result.getStatusCode().value());
-
 		Assertions.assertEquals(2, result.getBody().size());
 
 		Tutorial tutorial = result.getBody().get(0);
@@ -164,5 +148,10 @@ public class TutorialControllerTest {
 		
 		ResponseEntity<List<Tutorial>> response = this.tutorialController.findAllPublishedTutorials();
 		Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+	}
+	
+	@AfterEach
+	void cleanupDatabaseAfterTest() {
+		tutorialController.deleteAllTutorials();
 	}
 }
