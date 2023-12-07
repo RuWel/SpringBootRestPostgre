@@ -31,13 +31,14 @@ public class TutorialController {
 
 	// get all tutorials or tutorials containing keyword in title
 	@GetMapping("/tutorials")
-	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String keyword) {
+	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {
+		System.out.println("FFFFIIIINNNNDDDD = " + title);
 		List<Tutorial> result = new ArrayList<>();
 
-		if (keyword == null ) {
+		if (title == null ) {
 			tutorialRepository.findAll().forEach(result::add);
 		} else {
-			tutorialRepository.findByTitle(keyword).forEach(result::add);
+			tutorialRepository.findByTitleContaining(title).forEach(result::add);
 		}
 		
 		return new ResponseEntity<>(result, HttpStatus.OK);

@@ -2,6 +2,8 @@ package com.tutorial;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.tutorial.controller.TutorialController;
 import com.tutorial.model.Tutorial;
@@ -41,14 +44,13 @@ public class TutorialControllerTest {
 	void setupDatabaseForTest() {
 		url = "http://localhost:" + port + "/api/tutorials";
 		
-		// delete all tutorials
 		testRestTemplate.delete(url, Tutorial.class);
 	
-		Tutorial input = new Tutorial("testtitle1", "testdescription1", false);
+		Tutorial input = new Tutorial("Hello World", "testdescription1", false);
 		ResponseEntity<Tutorial> result = this.testRestTemplate.postForEntity(url, input, Tutorial.class);
 		id1 = result.getBody().getId();
 
-		input = new Tutorial("testtitle2", "testdescription2", false);
+		input = new Tutorial("Miss World", "testdescription2", false);
 		result = this.testRestTemplate.postForEntity(url, input, Tutorial.class);
 		id2 = result.getBody().getId();
 	}
@@ -63,6 +65,42 @@ public class TutorialControllerTest {
 		assertThat(this.testRestTemplate.getForObject(url, List.class)).isNotNull();
 	}
 	
+	@Test
+	void findTutorialsByKeywordHelloTest () {
+		url = "http://localhost:" + port + "/api/tutorials";
+
+		URI uri = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("title", "Hello").build().toUri();
+				
+		ResponseEntity<List> result = this.testRestTemplate.getForEntity(uri, List.class);		
+		LinkedHashMap<?, ?> map = (LinkedHashMap<?, ?>)(result.getBody().get(0));
+		
+		Assertions.assertEquals(HttpStatus.OK.value(), result.getStatusCode().value());
+		
+		String title = (String)map.get("title");
+		
+		assertThat(title.contains("Hello"));
+		Assertions.assertEquals(1, result.getBody().size());
+	}
+	
+	@Test
+	void findTutorialsByKeywordWorldTest () {
+		url = "http://localhost:" + port + "/api/tutorials";
+
+		URI uri = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("title", "World").build().toUri();
+				
+		ResponseEntity<List> result = this.testRestTemplate.getForEntity(uri, List.class);		
+		LinkedHashMap<?, ?> map = (LinkedHashMap<?, ?>)(result.getBody().get(0));
+		
+		Assertions.assertEquals(HttpStatus.OK.value(), result.getStatusCode().value());
+		
+		String title = (String)map.get("title");
+		
+		assertThat(title.contains("World"));
+		Assertions.assertEquals(2, result.getBody().size());
+	}
+
 	@Test
 	void createTutorialTest() {
 		Tutorial input = new Tutorial("testtitle3", "testdescription3", false);

@@ -8,5 +8,5 @@ import com.tutorial.model.Tutorial;
 
 public interface TutorialRepository extends JpaRepository<Tutorial, Long>{
 	List<Tutorial> findByPublished(boolean isPublished);
-	List<Tutorial> findByTitle(String keyword);
+	List<Tutorial> findByTitleContaining(String title);
 }
