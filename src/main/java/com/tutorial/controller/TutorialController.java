@@ -1,4 +1,3 @@
-
 package com.tutorial.controller;
 
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ public class TutorialController {
 	// get all tutorials or tutorials containing keyword in title
 	@GetMapping("/tutorials")
 	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String keyword) {
-		System.out.println("LIST ALL TUTORIALS");
 		List<Tutorial> result = new ArrayList<>();
 
 		if (keyword == null ) {
@@ -62,7 +60,6 @@ public class TutorialController {
 	// create tutorial
 	@PostMapping("/tutorials")
 	public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
-		System.out.println("CREATE TUTORIAL");
 		try {
 			Tutorial result = tutorialRepository.save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), tutorial.isPublished()));
 		
@@ -76,21 +73,21 @@ public class TutorialController {
 	@PutMapping("/tutorials/{id}")
 	public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") Long id, @RequestBody Tutorial tutorial) {
 		try {
-		Optional<Tutorial> result = tutorialRepository.findById(id);
-		
-		if (result.isPresent()) {
-			Tutorial data = result.get();
+			Optional<Tutorial> result = tutorialRepository.findById(id);
 			
-			data.setTitle(tutorial.getTitle());
-			data.setDescription(tutorial.getDescription());
-			data.setPublished(tutorial.isPublished());
-
-			Tutorial newEntity = tutorialRepository.save(data);
+			if (result.isPresent()) {
+				Tutorial data = result.get();
+				
+				data.setTitle(tutorial.getTitle());
+				data.setDescription(tutorial.getDescription());
+				data.setPublished(tutorial.isPublished());
+	
+				Tutorial newEntity = tutorialRepository.save(data);
+				
+				return new ResponseEntity<>(newEntity, HttpStatus.OK);
+			}
 			
-			return new ResponseEntity<>(newEntity, HttpStatus.OK);
-		}
-		
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
