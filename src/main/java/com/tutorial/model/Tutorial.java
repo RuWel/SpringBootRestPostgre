@@ -1,5 +1,7 @@
 package com.tutorial.model;
 
+import org.hibernate.validator.constraints.Length;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,16 +26,19 @@ public class Tutorial {
 	
 	@Column(name = "title")
 	@Getter @Setter 
-	@NotEmpty
+	@NotEmpty(message = "error.title.empty")
+	@Length(max = 255, message = "error.title.length")
 	private String title;
 	
 	@Column(name = "description")
-	@Getter @Setter 
+	@Getter @Setter
+	@NotEmpty(message = "error.description.empty")
+	@Length(max = 255, message = "error.description.length")
 	private String description;
 	
 	@Column(name = "published")
-	@Getter @Setter 
-	private boolean published;
+	@Getter @Setter
+	private boolean published = false;
 
 	public Tutorial(String title, String description, boolean published) {
 		this.title = title;

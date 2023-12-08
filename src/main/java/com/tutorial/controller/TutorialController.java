@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tutorial.error.CustomError;
 import com.tutorial.model.Tutorial;
 import com.tutorial.repository.TutorialRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
@@ -52,27 +55,27 @@ public class TutorialController {
 				return (new ResponseEntity<>(result.get(), HttpStatus.CREATED));
 			}
 			
-			return (new ResponseEntity<>(HttpStatus.NOT_FOUND));
+			return (new ResponseEntity<>(new CustomError("Tutorial with id " + id + " not found"), HttpStatus.NOT_FOUND));
 		} catch (Exception e) {
-			return (new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+			return (new ResponseEntity<>(new CustomError("Internal server error"), HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
 	
 	// create tutorial
 	@PostMapping(value="/tutorials", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
+	public ResponseEntity<Tutorial> createTutorial(@Valid @RequestBody Tutorial tutorial) {
 		try {
 			Tutorial result = tutorialRepository.save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), tutorial.isPublished()));
 		
 			return (new ResponseEntity<>(result, HttpStatus.CREATED));
 		} catch (Exception e) {
-			return (new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+			return (new ResponseEntity<>(new CustomError("Internal server error"), HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
 
 	// update tutorial
 	@PutMapping("/tutorials/{id}")
-	public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") Long id, @RequestBody Tutorial tutorial) {
+	public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") Long id, @Valid @RequestBody Tutorial tutorial) {
 		try {
 			Optional<Tutorial> result = tutorialRepository.findById(id);
 			
@@ -88,9 +91,9 @@ public class TutorialController {
 				return new ResponseEntity<>(newEntity, HttpStatus.OK);
 			}
 			
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return (new ResponseEntity<>(new CustomError("Tutorial with id " + id + " not found"), HttpStatus.NOT_FOUND));
 		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			return (new ResponseEntity<>(new CustomError("Internal server error"), HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
 
@@ -101,7 +104,7 @@ public class TutorialController {
 			tutorialRepository.deleteById(id);
 			return (new ResponseEntity<>(HttpStatus.NO_CONTENT));
 		} catch (Exception e) {
-			return (new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+			return (new ResponseEntity<>(new CustomError("Internal server error"), HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
 	
@@ -112,7 +115,7 @@ public class TutorialController {
 			tutorialRepository.deleteAll();
 			return (new ResponseEntity<>(HttpStatus.NO_CONTENT));
 		} catch (Exception e) {
-			return (new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+			return (new ResponseEntity<>(new CustomError("Internal server error"), HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
 
