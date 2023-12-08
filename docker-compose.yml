@@ -5,7 +5,12 @@ services:
     image: myspringbootcompose:latest
     build:
       context: .
+    ports:
+      - 8080:8080
     container_name: app
+    networks:
+      - backnet
+      - frontnet
     depends_on:
       - db
     environment:
@@ -20,8 +25,16 @@ services:
 
   db:
     image: 'postgres:13.1-alpine'
+    ports:
+      - 8082:5432
+    networks:
+      - backnet
     container_name: db
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123
       - POSTGRES_DB=testdb
+
+networks:
+  backnet:
+  frontnet:

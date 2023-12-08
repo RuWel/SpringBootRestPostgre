@@ -31,6 +31,7 @@ public class TutorialController {
 	// get all tutorials or tutorials containing keyword in title
 	@GetMapping("/tutorials")
 	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String keyword) {
+		System.out.println("LIST ALL TUTORIALS");
 		List<Tutorial> result = new ArrayList<>();
 
 		if (keyword == null ) {
@@ -61,6 +62,7 @@ public class TutorialController {
 	// create tutorial
 	@PostMapping("/tutorials")
 	public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
+		System.out.println("CREATE TUTORIAL");
 		try {
 			Tutorial result = tutorialRepository.save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), tutorial.isPublished()));
 		
