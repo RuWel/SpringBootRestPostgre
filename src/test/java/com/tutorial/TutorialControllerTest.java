@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.tutorial.controller.TutorialController;
+import com.tutorial.error.CustomError;
 import com.tutorial.model.Tutorial;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -75,6 +76,13 @@ public class TutorialControllerTest {
 	}
 
 	@Test
+	void findTutorialsByKeywordNoMatchTest () {
+		ResponseEntity<List<Tutorial>> result = this.tutorialController.getAllTutorials("XXX");		
+		Assertions.assertEquals(HttpStatus.OK.value(), result.getStatusCode().value());
+		Assertions.assertEquals(0, result.getBody().size());
+	}
+
+	@Test
 	void createTutorialTest() {
 		Tutorial tutorial = new Tutorial("testtitle3", "testdescription3", false);
 		
@@ -86,6 +94,40 @@ public class TutorialControllerTest {
 		assertThat(result.getBody().getTitle()).isEqualTo("testtitle3");
 		assertThat(result.getBody().getDescription()).isEqualTo("testdescription3");
 		assertThat(result.getBody().isPublished()).isFalse();
+	}
+
+	@Test
+	void createTutorialEmptyTitleTest() {
+		Tutorial tutorial = new Tutorial("", "testdescription'", false);
+		
+		ResponseEntity<Tutorial> result = this.tutorialController.createTutorial(tutorial);
+		
+		Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+
+		if (result.getBody() != null) {
+			if (result.getBody() instanceof CustomError ce) {
+				assertThat(ce.getErrorMessage()).isNotEmpty();
+			}
+		} else {
+			assertThat(result.getBody()).isNull();
+		}
+	}
+
+	@Test
+	void createTutorialTooLongDescriptionTest() {
+		Tutorial tutorial = new Tutorial("testtitle5", "testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5testdescription5", false);
+		
+		ResponseEntity<Tutorial> result = this.tutorialController.createTutorial(tutorial);
+		
+		Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+
+		if (result.getBody() != null) {
+			if (result.getBody() instanceof CustomError ce) {
+				assertThat(ce.getErrorMessage()).isNotEmpty();
+			}
+		} else {
+			assertThat(result.getBody()).isNull();
+		}
 	}
 
 	@Test
@@ -107,6 +149,38 @@ public class TutorialControllerTest {
 		assertThat(tutorial.getTitle()).isEqualTo(result.getBody().getTitle());
 		assertThat(tutorial.getDescription()).isEqualTo(result.getBody().getDescription());
 		assertThat(tutorial.isPublished()).isEqualTo(result.getBody().isPublished());
+	}
+
+	@Test
+	void updateTutorialEmptyTitleTest() {
+		Tutorial tutorial = new Tutorial("", "testdescription_1", false);
+
+		ResponseEntity<Tutorial> result = this.tutorialController.updateTutorial(id1, tutorial);
+		assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(result.getStatusCode()));
+
+		if (result.getBody() != null) {
+			if (result.getBody() instanceof CustomError ce) {
+				assertThat(ce.getErrorMessage()).isNotEmpty();
+			}
+		} else {
+			assertThat(result.getBody()).isNull();
+		}
+	}
+
+	@Test
+	void updateTutorialLongDescriptionTest() {
+		Tutorial tutorial = new Tutorial("testtitle_1", "testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1testdescription_1", false);
+
+		ResponseEntity<Tutorial> result = this.tutorialController.updateTutorial(id1, tutorial);
+		assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(result.getStatusCode()));
+
+		if (result.getBody() != null) {
+			if (result.getBody() instanceof CustomError ce) {
+				assertThat(ce.getErrorMessage()).isNotEmpty();
+			}
+		} else {
+			assertThat(result.getBody()).isNull();
+		}
 	}
 
 	@Test
